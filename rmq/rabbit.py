@@ -69,8 +69,12 @@ class LazyChannel:
 
 
 if __name__ == '__main__':
+    import time
     rmq_admin = RabbitAdmin(connection, direct_exchange, direct_queues, direct_durable)
     print(rmq_admin.queue_name)
+    while True:
+        print(f'Message left to process: {rmq_admin.message_count}')
+        time.sleep(3)
 
 
 
