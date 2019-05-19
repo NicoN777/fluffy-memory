@@ -1,26 +1,42 @@
-from rmq.rabbit import connection, LazyChannel
-from rmq.conf import *
-from rmq.utils import from_str
+from rabbit import connection, LazyChannel
+from conf import *
+from utils import to_str, coroutine
 import time
-
-def callback(channel, method_frame, header_frame, body):
-    message = from_str(body)
-    print(message)
-    time.sleep(5)
-    channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+import random
 
 
 receiver = LazyChannel(connection=connection,
                        type=direct_type,
                        exchange=direct_exchange,
                        durable=direct_durable,
-                       queue=direct_queues)
+                       queue=direct_queue)
 
-with receiver as r:
-    print(f'[Consumer] Waiting for messages from queue [{receiver.queue}]...')
-    r.basic_qos(prefetch_count=1)
-    r.basic_consume(queue=receiver.queue, on_message_callback=callback)
-    r.start_consuming()
+@coroutine
+def complete():
+    while True:
+        item = yield
+        print(f'COMPLETE {item}')
+
+def todo_callback(channel, method_frame, header_frame, body):
+    todo = to_str(body)
+    if not todo['completed']:
+        random_sleep_time = random.randint(5,10)
+        print(f'Todo {todo} is not complete... waiting for {random_sleep_time} seconds...')
+        time.sleep(random_sleep_time)
+        todo['completed'] = True
+    complete().send(todo)
+    channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+
+def direct_receive():
+    with receiver as r:
+        print(f'[Consumer] Waiting for messages from queue [{receiver.queue}]...')
+        r.basic_qos(prefetch_count=1)
+        r.basic_consume(queue=receiver.queue, on_message_callback=todo_callback)
+        r.start_consuming()
+
+
+if __name__== '__main__':
+    direct_receive()
 
 
 
