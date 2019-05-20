@@ -3,13 +3,14 @@
 
 import configparser
 import os
+import logging
 
-secret_path = os.environ.get('RMQ_PATH')
-secret_file = os.path.join(secret_path, 'rmq.ini')
+_secret_path = os.environ.get('RMQ_PATH')
+_secret_file = os.path.join(_secret_path, 'rmq.ini')
 config = configparser.RawConfigParser()
 
-print(f'Loading from: {secret_file}')
-config.read(secret_file)
+print(f'Loading from: {_secret_file}')
+config.read(_secret_file)
 
 #General
 user = config.get('General', 'user')
