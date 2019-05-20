@@ -1,22 +1,32 @@
-from rabbit import connection, LazyChannel
+# producer.py
+# Produce "" data and push to exchanges
+
+from rabbit import connection, LazyRMQ
 from conf import *
 from utils import from_obj
-from requester import request_todos
+from requester import request_todos, request_comments
 
 
-sender = LazyChannel(connection=connection,
-                     type=direct_type,
-                     exchange=direct_exchange,
-                     durable=direct_durable,
-                     queue=direct_queue)
+direct_sender = LazyRMQ(connection=connection,exchange=direct_exchange)
+
+fanout_sender = LazyRMQ(connection=connection,exchange=fanout_exchange)
 
 def direct_send():
-    with sender as s:
+    with direct_sender as s:
         for todo in request_todos():
             payload = todo
             print(f'Message to be sent: {payload}')
-            s.basic_publish(exchange=sender.exchange, routing_key=sender.routing_key, body=from_obj(payload))
+            s.basic_publish(exchange=direct_sender.exchange, routing_key=direct_sender.routing_key, body=from_obj(payload))
             print(f'Message sent!')
+            
+def fanout_send():
+    with fanout_sender as s:
+        for post in request_comments():
+            payload = post
+            print(f'Message to be sent: {payload}')
+            s.basic_publish(exchange=fanout_sender.exchange, routing_key=fanout_sender.routing_key, body=from_obj(payload))
+    
 
 if __name__ == '__main__':
     direct_send()
+    fanout_send()

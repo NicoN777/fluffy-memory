@@ -1,6 +1,7 @@
 import pika
 import time
 from conf import *
+from utils import from_obj
 
 pika_credentials = pika.PlainCredentials(username=user, password=password)
 connection_params = pika.ConnectionParameters(host=host, port=port, credentials=pika_credentials)
@@ -18,10 +19,6 @@ class RabbitAdmin:
     def __declare_ok(self):
         return self.__admin_channel.queue_declare(queue=self.__queue, durable=self.__durable)
 
-
-    # def _refresh(self):
-    #     if self.admin_channel.is_closed or self.admin_channel.is_closing:
-    #         self.co
     @property
     def admin_channel(self):
         return self.__admin_channel
@@ -65,24 +62,36 @@ class RabbitAdmin:
 
 
 
-class LazyChannel:
+class LazyRMQ:
 
-    def __init__(self, connection=None, type='', exchange='', routing_key='', durable=True, queue=''):
+    def __init__(self, connection=None, type='', exchange='', routing_key='', durable=True, queues=None, *args, **kwargs):
         self.connection = connection
         self.type = type
         self.exchange = exchange
         self.routing_key = routing_key
         self.durable = durable
-        self.queue = queue
+        self.queues = queues
+        self.queue = kwargs.get('queue', '')
         self.channels = []
 
-    def __enter__(self):
+    def set_up(self):
         channel = self.connection.channel()
+        print(self)
         exchange_declare = channel.exchange_declare(exchange=self.exchange,
                                                     exchange_type=self.type,
                                                     durable=self.durable)
-        queue_declare = channel.queue_declare(queue=self.queue, durable=self.durable)
-        bind_ok = channel.queue_bind(queue=self.queue, exchange=self.exchange, routing_key=self.routing_key)
+        queue_declares = dict()
+        bind_oks = dict()
+        if self.queues:
+            for queue in self.queues:
+                queue_declares[queue] = channel.queue_declare(queue=queue, durable=self.durable)
+                bind_oks[queue] = channel.queue_bind(queue=queue, exchange=self.exchange, routing_key=self.routing_key)
+        print(f'Exchange declare: {exchange_declare}\n'
+              f'Queue declares: {queue_declares}\n'
+              f'Bind oks: {bind_oks}')
+
+    def __enter__(self):
+        channel = self.connection.channel()
         self.channels.append(channel)
         print(f'Channels open: {len(self.channels)}')
         return channel
@@ -91,13 +100,32 @@ class LazyChannel:
         self.channels.pop().close()
         print(f'Channel closed.')
 
+    def __str__(self):
+        return f'Type: {self.type}\n' \
+               f'Exchange: {self.exchange}\n' \
+               f'Routing Key: {self.routing_key}\n' \
+               f'Durable: {self.durable}\n' \
+               f'Queues={self.queues}\n' \
+               f'Read from queue: {self.queue}'
 
 
 if __name__ == '__main__':
     #Settings for direct
-    direct = RabbitAdmin(connection, exchange=direct_exchange, queue=direct_queue, durable=direct_durable)
+    # direct = RabbitAdmin(connection, exchange=direct_exchange, queue=direct_queue, durable=direct_durable)
     #Settings for fanout
     # fanout = RabbitAdmin(connection, exchange=fanout_exchange, durable=fanout_durable, kwargs={'queues': fanout_queues})
+
+    fanout_sender = LazyRMQ(
+        connection=connection,
+        type=fanout_type,
+        exchange=fanout_exchange,
+        durable=fanout_durable,
+        queues=fanout_queues
+    )
+
+    fanout_sender.set_up()
+
+
     print('')
 
 

@@ -1,3 +1,6 @@
+# requester.py
+# Request fake JSON data to send to the queues
+
 import requests
 
 def request(url:str):
@@ -21,3 +24,7 @@ def request_comments():
 def request_todos():
         url = 'https://jsonplaceholder.typicode.com/todos'
         return request(url)
+
+def reques_posts():
+    url = 'https://jsonplaceholder.typicode.com/posts'
+    return request(url)

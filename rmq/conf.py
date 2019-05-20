@@ -1,3 +1,6 @@
+# conf.py
+# Read configurations from properties file.
+
 import configparser
 import os
 
@@ -19,13 +22,13 @@ uri = config.get('General', 'uri')
 direct_type = 'direct'
 direct_exchange = config.get('Direct', 'exchange')
 direct_durable = config.getboolean('Direct', 'durable')
-direct_queue = config.get('Direct', 'queues')
+direct_queues = config.get('Direct', 'queues').split()
 
 #Fanout
 fanout_type = 'fanout'
 fanout_exchange = config.get('Fanout', 'exchange')
 fanout_durable = config.get('Fanout', 'durable')
-fanout_queues = config.get('Fanout', 'queues')
+fanout_queues = config.get('Fanout', 'queues').split()
 
 #Routing
 
