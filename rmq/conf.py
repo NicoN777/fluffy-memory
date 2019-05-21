@@ -31,13 +31,12 @@ fanout_exchange = config.get('Fanout', 'exchange')
 fanout_durable = config.get('Fanout', 'durable')
 fanout_queues = config.get('Fanout', 'queues').split()
 
-#Routing
 
 #Header
 
-
-if __name__ == '__main__':
+def list_properties():
     for section in config.sections():
         print(f'-- Section: {section} --')
         for option in config.options(section):
             print (f'{option}= {config.get(section, option)}')
+

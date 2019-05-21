@@ -9,6 +9,7 @@ connection = pika.BlockingConnection(parameters=connection_params)
 
 
 class RabbitAdmin:
+    """RMQ "Admin" for monitoring"""
 
     def __init__(self, connection, exchange, queue, durable, *args, **kwargs):
         self.__admin_channel = connection.channel()
@@ -107,25 +108,5 @@ class LazyRMQ:
                f'Durable: {self.durable}\n' \
                f'Queues={self.queues}\n' \
                f'Read from queue: {self.queue}'
-
-
-if __name__ == '__main__':
-    #Settings for direct
-    # direct = RabbitAdmin(connection, exchange=direct_exchange, queue=direct_queue, durable=direct_durable)
-    #Settings for fanout
-    # fanout = RabbitAdmin(connection, exchange=fanout_exchange, durable=fanout_durable, kwargs={'queues': fanout_queues})
-
-    fanout_sender = LazyRMQ(
-        connection=connection,
-        type=fanout_type,
-        exchange=fanout_exchange,
-        durable=fanout_durable,
-        queues=fanout_queues
-    )
-
-    fanout_sender.set_up()
-
-
-    print('')
 
 

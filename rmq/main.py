@@ -31,19 +31,20 @@ if __name__ == '__main__':
     parser.add_argument('--setup', help='Initializes DIRECT and FANOUT exchanges '
                                         'and queue bindings', action='store_true')
 
+    parser.add_argument('--list_properties', help='See properties for examples', action='store_true')
 
-    parser.add_argument('type', help='direct or fanout', choices=['direct', 'fanout'])
-    #subparsers are inviked based on the value of the first positiional argument
-
-
+    parser.add_argument('--type', help='direct or fanout', choices=['direct', 'fanout'])
 
 
-    parser.add_argument('action', help='produce items or consue itms', choices=['produce', 'consume'])
+    parser.add_argument('--action', help='produce items or consue itms', choices=['produce', 'consume'])
 
     args = parser.parse_args()
     if args.setup:
         print('Initializing RMQ')
         initialize_rmq()
+
+    if args.list_properties:
+        list_properties()
 
     if args.type == 'direct':
         if args.action == 'produce':
@@ -51,7 +52,8 @@ if __name__ == '__main__':
             direct_send()
         else:
             direct_receive()
-    else:
+    elif args.type == 'fanout':
+        print('Sending messages to the exchange')
         if args.action == 'produce':
             fanout_send()
         else:
