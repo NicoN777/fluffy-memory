@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument('--setup', help='Initializes DIRECT and FANOUT exchanges '
                                         'and queue bindings', action='store_true')
 
-    parser.add_argument('--list_properties', help='See properties for examples', action='store_true')
+    parser.add_argument('--list-properties', help='See properties for examples', action='store_true')
 
     subparsers = parser.add_subparsers(dest='command')
 
