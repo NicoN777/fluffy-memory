@@ -1,0 +1,2 @@
+# fluffy-memory
+RabbitMQ Examples
