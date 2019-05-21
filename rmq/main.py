@@ -1,5 +1,5 @@
 import argparse
-from consumer import (direct_receive, fanout_receive_1, fanout_receive_2)
+from consumer import (direct_receive, fanout_1_receive, fanout_2_receive)
 from producer import direct_send, fanout_send
 from conf import *
 
@@ -33,10 +33,14 @@ if __name__ == '__main__':
 
     parser.add_argument('--list_properties', help='See properties for examples', action='store_true')
 
-    parser.add_argument('--type', help='direct or fanout', choices=['direct', 'fanout'])
+    subparsers = parser.add_subparsers(dest='command')
 
+    direct = subparsers.add_parser('direct')
+    direct.add_argument('action', choices=['produce', 'consume'])
 
-    parser.add_argument('--action', help='produce items or consue itms', choices=['produce', 'consume'])
+    fanout = subparsers.add_parser('fanout')
+    fanout.add_argument('action', choices=['produce', 'consume'])
+    fanout.add_argument('--queue-name', help='select a queue name to consume from, default fanout_1', default='fanout_1')
 
     args = parser.parse_args()
     if args.setup:
@@ -46,17 +50,17 @@ if __name__ == '__main__':
     if args.list_properties:
         list_properties()
 
-    if args.type == 'direct':
+    if args.command == 'direct':
         if args.action == 'produce':
             print('Sending messages to the exchange')
             direct_send()
         else:
             direct_receive()
-    elif args.type == 'fanout':
+    elif args.command == 'fanout':
         print('Sending messages to the exchange')
         if args.action == 'produce':
             fanout_send()
         else:
-            fanout_receive_1()
+            eval(f'{args.queue_name}_receive()')
 
 

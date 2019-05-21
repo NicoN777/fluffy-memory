@@ -42,7 +42,7 @@ def direct_receive():
         r.basic_consume(queue=receiver.queue, on_message_callback=direct_callback)
         r.start_consuming()
 
-def fanout_receive_1():
+def fanout_1_receive():
     fanout_receiver_1 = LazyRMQ(connection=connection,
                                 exchange=fanout_exchange,
                                 **{'queue': 'fanout_1'})
@@ -52,7 +52,7 @@ def fanout_receive_1():
         r.basic_consume(queue=fanout_receiver_1.queue, on_message_callback=fanout_callback)
         r.start_consuming()
 
-def fanout_receive_2():
+def fanout_2_receive():
     fanout_receiver_2 = LazyRMQ(connection=connection,
                                 exchange=fanout_exchange,
                                 **{'queue': 'fanout_2'})
