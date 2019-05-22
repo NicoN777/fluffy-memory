@@ -10,24 +10,37 @@ The main entry point to load parameters for RabbitMQ configs is:
 ```commandline
 python rmq/main.py --setup
 ```
+
+See what has been loaded and set up
+
+```commandline
+python rmq/main.py --list-properties
+```
+
 ### Direct Exchange Example:
 ##### Send messages to queue bound to a direct exchange:
 ```commandline
-python rmq/main.py --type direct --action produce
+python rmq/main.py direct produce
 ```
 
 ##### Consume messages:
 ```commandline
-python rmq/main.py --type direct --action consume
+python rmq/main.py direct consume
 ```
 
 ### Fanout Exchange Example:
 ##### Produce messages:
 ```commandline
-python rmq/main.py --type fanout --action produce
+python rmq/main.py fanout produce
 ```
 
 ##### Consume messages:
+Default queue is listed as fanout_1
+
 ```commandline
-python rmq/main.py --type fanout --action consume
+python rmq/main.py fanout consume 
+```
+
+```commandline
+python rmq/main.py fanout consume --queue-name fanout_2
 ```

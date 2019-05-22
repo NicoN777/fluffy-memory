@@ -1,7 +1,6 @@
 import pika
 import time
 from conf import *
-from utils import from_obj
 
 pika_credentials = pika.PlainCredentials(username=user, password=password)
 connection_params = pika.ConnectionParameters(host=host, port=port, credentials=pika_credentials)
@@ -57,10 +56,7 @@ class RabbitAdmin:
                                                     exchange=self.__exchange,
                                                     durable=self.__durable)
             binds[queue] = bind_ok
-
         return binds
-
-
 
 
 class LazyRMQ:

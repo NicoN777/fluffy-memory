@@ -1,5 +1,5 @@
 import argparse
-from consumer import (direct_receive, fanout_1_receive, fanout_2_receive)
+from consumer import direct_receive, fanout_receive
 from producer import direct_send, fanout_send
 from conf import *
 
@@ -61,6 +61,4 @@ if __name__ == '__main__':
         if args.action == 'produce':
             fanout_send()
         else:
-            eval(f'{args.queue_name}_receive()')
-
-
+            fanout_receive(args.queue_name)
