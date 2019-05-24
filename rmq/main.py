@@ -21,8 +21,18 @@ def initialize_rmq():
         queues=fanout_queues
     )
 
+    topic = LazyRMQ(
+        connection=connection,
+        type=topic_type,
+        exchange=topic_exchange,
+        durable=topic_durable,
+        queues=topic_queues,
+        routing_keys=topic_routing_keys
+    )
+
     direct.set_up()
     fanout.set_up()
+    topic.set_up()
 
 
 if __name__ == '__main__':

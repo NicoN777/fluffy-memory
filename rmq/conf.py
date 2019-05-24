@@ -1,5 +1,5 @@
 # conf.py
-# Read configurations from properties file.
+# Read _configurations from properties file.
 
 import configparser
 import os
@@ -7,36 +7,59 @@ import logging
 
 _secret_path = os.environ.get('RMQ_PATH')
 _secret_file = os.path.join(_secret_path, 'rmq.ini')
-config = configparser.RawConfigParser()
+_config = configparser.ConfigParser()
+_config.read(_secret_file)
 
-print(f'Loading from: {_secret_file}')
-config.read(_secret_file)
+def get_pika_params(section:str):
+    params = get_properties(section)
+    if 'queues' in params.keys():
+        params['queues'] = params.get('queues', '').split()
+    if 'routing_keys' in params.keys():
+        params['routing_keys'] = params.get('routing_keys', '').split()
+    return params
 
-#General
-user = config.get('General', 'user')
-password = config.get('General', 'password')
-host = config.get('General', 'host')
-port = config.get('General', 'port')
-uri = config.get('General', 'uri')
-
-#Direct
-direct_type = 'direct'
-direct_exchange = config.get('Direct', 'exchange')
-direct_durable = config.getboolean('Direct', 'durable')
-direct_queues = config.get('Direct', 'queues').split()
-
-#Fanout
-fanout_type = 'fanout'
-fanout_exchange = config.get('Fanout', 'exchange')
-fanout_durable = config.get('Fanout', 'durable')
-fanout_queues = config.get('Fanout', 'queues').split()
-
-
-#Header
+def get_properties(section:str):
+    if section in _config.sections():
+        properties = dict(_config[section])
+    else:
+        raise ValueError(f'Section: {section}, not in properties')
+    return properties
 
 def list_properties():
-    for section in config.sections():
-        print(f'-- Section: {section} --')
-        for option in config.options(section):
-            print (f'{option}= {config.get(section, option)}')
+    all_properties = {section:{option:value for (option, value) in _config[section].items()} for section in  _config.sections()}
+    for section, _ in all_properties.items():
+        print(f'--- Section: {section} ---')
+        for _ in _.items():
+            print(_)
+
+#Connection
+user = _config.get('General', 'user')
+password = _config.get('General', 'password')
+host = _config.get('General', 'host')
+port = _config.get('General', 'port')
+uri = _config.get('General', 'uri')
+
+#Direct
+direct_type = _config.get('Direct', 'type')
+direct_exchange = _config.get('Direct', 'exchange')
+direct_durable = _config.getboolean('Direct', 'durable')
+direct_queues = _config.get('Direct', 'queues').split()
+
+#Fanout
+fanout_type = _config.get('Fanout', 'type')
+fanout_exchange = _config.get('Fanout', 'exchange')
+fanout_durable = _config.get('Fanout', 'durable')
+fanout_queues = _config.get('Fanout', 'queues').split()
+
+#Topic
+topic_type = _config.get('Topic', 'type')
+topic = _config._sections['Topic']
+topic_exchange = _config.get('Topic', 'exchange')
+topic_durable = _config.getboolean('Topic', 'durable')
+topic_queues = _config.get('Topic', 'queues').split()
+topic_routing_keys = _config.get('Topic', 'routing_keys').split()
+
+print('')
+
+#Header
 

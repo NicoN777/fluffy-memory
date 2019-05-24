@@ -22,7 +22,10 @@ def fanout_send():
             payload = post
             print(f'Message to be sent: {payload}')
             s.basic_publish(exchange=fanout_sender.exchange, routing_key=fanout_sender.routing_key, body=from_obj(payload))
-    
+
+def topic_send():
+    topic_sender = LazyRMQ(connection=connection, exchange=topic_exchange)
+    pass
 
 if __name__ == '__main__':
     direct_send()
