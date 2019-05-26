@@ -1,6 +1,6 @@
 import argparse
-from consumer import direct_receive, fanout_receive
-from producer import direct_send, fanout_send
+from consumer import direct_receive, fanout_receive, topic_receive
+from producer import direct_send, fanout_send, topic_send
 from conf import *
 
 def initialize_rmq():
@@ -52,6 +52,11 @@ if __name__ == '__main__':
     fanout.add_argument('action', choices=['produce', 'consume'])
     fanout.add_argument('--queue-name', help='select a queue name to consume from, default fanout_1', default='fanout_1')
 
+    topic = subparsers.add_parser('topic')
+    topic.add_argument('action', choices=['produce', 'consume'])
+    topic.add_argument('--routing-key', help='route a message with a key, default blue', default='blue')
+    topic.add_argument('--queue-name', help='select a queue name to consume from, default blue_queue', default='blue_queue')
+
     args = parser.parse_args()
     if args.setup:
         print('Initializing RMQ')
@@ -72,3 +77,9 @@ if __name__ == '__main__':
             fanout_send()
         else:
             fanout_receive(args.queue_name)
+    elif args.command == 'topic':
+        print('Sending messages to the exchange')
+        if args.action == 'produce':
+            topic_send(args.routing_key)
+        else:
+            topic_receive(args.queue_name)

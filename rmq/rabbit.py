@@ -2,6 +2,7 @@ import pika
 import time
 from conf import *
 from collections import defaultdict
+from itertools import zip_longest
 
 pika_credentials = pika.PlainCredentials(username=user, password=password)
 connection_params = pika.ConnectionParameters(host=host, port=port, credentials=pika_credentials)
@@ -71,10 +72,9 @@ class RabbitAdmin:
             binds[queue] = bind_ok
         return binds
 
-
 class LazyRMQ:
 
-    def __init__(self, connection=None, type='', exchange='', routing_keys=None, durable=True, queues=None, *args, **kwargs):
+    def __init__(self, connection=None, type='', exchange='', routing_keys=list(), durable=True, queues=None, *args, **kwargs):
         self.connection = connection
         self.type = type
         self.exchange = exchange
@@ -93,20 +93,16 @@ class LazyRMQ:
                                                     durable=self.durable)
         queue_declares = dict()
         bind_oks = defaultdict(list)
-        if self.queues and not self.routing_keys:
-            for queue in self.queues:
-                queue_declares[queue] = channel.queue_declare(queue=queue, durable=self.durable)
-                bind_oks[queue].append(channel.queue_bind(queue=queue, exchange=self.exchange, routing_key=self.queue))
 
-        if self.routing_keys and (len(self.queues) == len(self.routing_keys)):
-            bind_oks = defaultdict(list)
-            for queue, _ in zip(self.queues,self.routing_keys):
-                for routing_key in _.split('-'):
-                    bind_oks[queue].append(channel.queue_bind(queue=queue, exchange=self.exchange, routing_key=routing_key))
+        print(f'Exchange declare: {exchange_declare}')
 
-        print(f'Exchange declare: {exchange_declare}\n'
-              f'Queue declares: {queue_declares}\n'
-              f'Bind oks: {bind_oks}')
+        for queue, _ in zip_longest(self.queues, self.routing_keys, fillvalue=''):
+            queue_declares[queue] = channel.queue_declare(queue=queue, durable=self.durable)
+            print(f'Queue: {queue}')
+            _ = _.split('-')
+            for routing_key in _:
+                print(f'bound to --> {routing_key}')
+                bind_oks[queue].append(channel.queue_bind(queue=queue, exchange=self.exchange, routing_key=routing_key))
 
     def __enter__(self):
         channel = self.connection.channel()
@@ -125,15 +121,3 @@ class LazyRMQ:
                f'Durable: {self.durable}\n' \
                f'Queues={self.queues}\n' \
                f'Read from queue: {self.queue}'
-
-
-if __name__ == '__main__':
-    topic = RabbitAdmin(
-        connection=connection,
-        exchange=topic_exchange,
-        queue='',
-        durable=topic_durable,
-        **{'queues':topic_queues}
-    )
-
-    topic.delete_queues()
