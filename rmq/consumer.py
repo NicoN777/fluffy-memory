@@ -33,22 +33,35 @@ def fanout_callback(channel, method_frame, header_frame, body):
     channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
 
-def direct_receive():
-    receiver = LazyRMQ(connection=connection,
-                       **{'queue': 'direct_1'})
+def topic_callback(channel, method_frame, header_frame, body):
+    # message = to_str(body)
+    message = body
+    print(message)
+    time.sleep(random.randint(2,7))
+    channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+
+def receive(receiver, callback):
     with receiver as r:
         print(f'[Consumer] Waiting for messages from queue [{receiver.queue}]...')
         r.basic_qos(prefetch_count=1)
-        r.basic_consume(queue=receiver.queue, on_message_callback=direct_callback)
+        r.basic_consume(queue=receiver.queue, on_message_callback=callback)
         r.start_consuming()
+
+def direct_receive():
+    direct_receiver = LazyRMQ(connection=connection,
+                       **{'queue': 'direct_1'})
+    receive(direct_receiver, direct_callback)
+
+def topic_receive(queue_name):
+    topic_receiver = LazyRMQ(connection=connection,
+                             exchange=topic_exchange,
+                             **{'queue': f'{queue_name}'})
+    receive(topic_receiver, topic_callback)
 
 def fanout_receive(queue_name):
     fanout_receiver = LazyRMQ(connection=connection,
                                 exchange=fanout_exchange,
                                 **{'queue': f'{queue_name}'})
-    with fanout_receiver as r:
-        print(f'Waiting for messages from: {fanout_receiver.queue}')
-        r.basic_qos(prefetch_count=1)
-        r.basic_consume(queue=fanout_receiver.queue, on_message_callback=fanout_callback)
-        r.start_consuming()
+    receive(fanout_receiver, fanout_callback)
+
 

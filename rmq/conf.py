@@ -59,7 +59,5 @@ topic_durable = _config.getboolean('Topic', 'durable')
 topic_queues = _config.get('Topic', 'queues').split()
 topic_routing_keys = _config.get('Topic', 'routing_keys').split()
 
-print('')
-
 #Header
 
